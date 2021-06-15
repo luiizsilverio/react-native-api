@@ -18,6 +18,10 @@ target 'apis' do
 
   pod 'RNFS', :path => '../node_modules/react-native-fs'
 
+  pod 'react-native-camera', :path => '../node_modules/react-native-camera'
+
+  pod 'RNSensors', :path => '../node_modules/react-native-sensors'
+
   target 'apisTests' do
     inherit! :complete
     # Pods for testing

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import {
   SafeAreaView,
   ScrollView,
@@ -20,8 +20,11 @@ import Clipboard from '@react-native-clipboard/clipboard'
 import AsyncStorage from '@react-native-community/async-storage'
 import fs from 'react-native-fs'
 import { Colors } from 'react-native/Libraries/NewAppScreen';
+import { RNCamera } from 'react-native-camera'
+import { accelerometer, SensorTypes, setUpdateIntervalForType } from 'react-native-sensors'
 
 function App() {
+  const refCamera = useRef()
   const isDarkMode = useColorScheme() === 'dark';
 
   const backgroundStyle = {
@@ -135,6 +138,7 @@ function App() {
   }, [])
 
   function showToast(tipo, mensagem) {
+    console.log(mensagem)
     switch (tipo) {
       case 0: 
         ToastAndroid.show(mensagem, ToastAndroid.SHORT)
@@ -150,8 +154,40 @@ function App() {
         ToastAndroid.show(mensagem, ToastAndroid.LONG);
     }
   }
-
   
+  function shot() {    
+    async function tiraFoto() {
+      if (this.camera) {
+        const options = {
+          quality: 0.5,
+          base64: true        
+        }
+        const data = await this.camera.takePictureAsync(options)
+        console.log(data)
+      }    
+    }    
+    console.log('shot')
+    tiraFoto()
+  }
+
+  function locale() {
+    console.log('Geolocation', navigator)
+    const {geolocation} = navigator
+    geolocation.getCurrentPosition((response) => {
+      console.log(response)  
+    })
+    // const watch Id = geolocation.watchPosition(...)
+    // geolocation.clearWatch()
+  }
+
+  function acelerom() {
+    console.log('Acelerômetro')
+    setUpdateIntervalForType(SensorTypes.accelerometer, 2000)
+    accelerometer.subscribe(({x, y, z}) => {
+      console.log(`x=${x}, y=${y}, z=${z}`)
+    })
+  }
+
   return (
     <SafeAreaView style={backgroundStyle}>
       <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
@@ -160,25 +196,44 @@ function App() {
       <TextInput />
      
       <Button
-        onPress={() => showToast(0)}
+        onPress={() => showToast(0, 'mensagem')}
         title="Toast rápido"
         color="#841584"        
       />
       <Button
-        onPress={() => showToast(1)}
+        onPress={() => showToast(1, 'mensagem')}
         title="Toast lento"
         color="blue"
       />
       <Button
-        onPress={() => showToast(2)}
+        onPress={() => showToast(2, 'mensagem')}
         title="Toast no centro"
         color="green"                
       />
       <Button
-        onPress={() => {}}
-        title="---"
+        onPress={locale}
+        title="Localização"
+        color="teal"
+      />
+      <Button
+        onPress={shot}
+        title="Tirar Foto"
         color="red"
       />
+      <Button
+        onPress={acelerom}
+        title="Acelerômetro"
+        color="lightblue"
+      />
+
+
+      <RNCamera
+        ref={ref => {this.camera = ref;}}
+        style={{height: 200, width: 200}}
+        type={RNCamera.Constants.Type.front}  //back
+        flashMode={RNCamera.Constants.FlashMode.on}        
+      />
+
 
     </SafeAreaView>
   );
